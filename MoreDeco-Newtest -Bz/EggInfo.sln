@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33209.295
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoreDeco", "MoreDeco.csproj", "{7169F89F-513E-43A8-85D0-F9A65BDE354E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomFoods2", "..\CustomFoods2\CustomFoods2.csproj", "{17BA975B-08D4-45F0-9395-FB12723F129D}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RewrittenRamuneLib", "C:\Users\Cookay\Desktop\SubnauticaPlugins-Nautilus-main\RewrittenRamuneLibsn\RewrittenRamuneLib.shproj", "{EBB8A44E-C589-4F9B-BFE8-209603E19EEA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7169F89F-513E-43A8-85D0-F9A65BDE354E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7169F89F-513E-43A8-85D0-F9A65BDE354E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7169F89F-513E-43A8-85D0-F9A65BDE354E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7169F89F-513E-43A8-85D0-F9A65BDE354E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17BA975B-08D4-45F0-9395-FB12723F129D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17BA975B-08D4-45F0-9395-FB12723F129D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17BA975B-08D4-45F0-9395-FB12723F129D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17BA975B-08D4-45F0-9395-FB12723F129D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {39D73AC2-9F37-479E-8061-DC4235A75BEA}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		C:\Users\Cookay\Desktop\SubnauticaPlugins-Nautilus-main\RewrittenRamuneLibsn\RewrittenRamuneLib.projitems*{17ba975b-08d4-45f0-9395-fb12723f129d}*SharedItemsImports = 4
+		C:\Users\Cookay\Desktop\SubnauticaPlugins-Nautilus-main\RewrittenRamuneLibsn\RewrittenRamuneLib.projitems*{7169f89f-513e-43a8-85d0-f9a65bde354e}*SharedItemsImports = 4
+		C:\Users\Cookay\Desktop\SubnauticaPlugins-Nautilus-main\RewrittenRamuneLibsn\RewrittenRamuneLib.projitems*{ebb8a44e-c589-4f9b-bfe8-209603e19eea}*SharedItemsImports = 13
+	EndGlobalSection
+EndGlobal
