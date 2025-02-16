@@ -1,0 +1,10 @@
+/media/cookay/windows/all my projects/updated mods project/MoreDeco-Newtest -Bz/bin/Release/CustomItems.dll
+/media/cookay/windows/all my projects/updated mods project/MoreDeco-Newtest -Bz/bin/Release/CustomItems.pdb
+/media/cookay/windows/all my projects/updated mods project/MoreDeco-Newtest -Bz/bin/Release/Nautilus.dll
+/media/cookay/windows/all my projects/updated mods project/MoreDeco-Newtest -Bz/bin/Release/CustomBatteries.dll
+/media/cookay/windows/all my projects/updated mods project/MoreDeco-Newtest -Bz/obj/Release/CustomItems.csproj.AssemblyReference.cache
+/media/cookay/windows/all my projects/updated mods project/MoreDeco-Newtest -Bz/obj/Release/MyPluginInfo.cs
+/media/cookay/windows/all my projects/updated mods project/MoreDeco-Newtest -Bz/obj/Release/CustomItems.csproj.CoreCompileInputs.cache
+/media/cookay/windows/all my projects/updated mods project/MoreDeco-Newtest -Bz/obj/Release/CustomItems.csproj.CopyComplete
+/media/cookay/windows/all my projects/updated mods project/MoreDeco-Newtest -Bz/obj/Release/CustomItems.dll
+/media/cookay/windows/all my projects/updated mods project/MoreDeco-Newtest -Bz/obj/Release/CustomItems.pdb

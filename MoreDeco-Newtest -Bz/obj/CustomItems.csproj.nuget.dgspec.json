@@ -1,0 +1,82 @@
+{
+  "format": 1,
+  "restore": {
+    "/media/cookay/windows/all my projects/updated mods project/MoreDeco-Newtest -Bz/CustomItems.csproj": {}
+  },
+  "projects": {
+    "/media/cookay/windows/all my projects/updated mods project/MoreDeco-Newtest -Bz/CustomItems.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/media/cookay/windows/all my projects/updated mods project/MoreDeco-Newtest -Bz/CustomItems.csproj",
+        "projectName": "CustomItems",
+        "projectPath": "/media/cookay/windows/all my projects/updated mods project/MoreDeco-Newtest -Bz/CustomItems.csproj",
+        "packagesPath": "/home/cookay/.nuget/packages/",
+        "outputPath": "/media/cookay/windows/all my projects/updated mods project/MoreDeco-Newtest -Bz/obj/",
+        "projectStyle": "PackageReference",
+        "skipContentFileWrite": true,
+        "UsingMicrosoftNETSdk": false,
+        "configFilePaths": [
+          "/media/cookay/windows/Backup again/source/repos/MoreLockers - BZ/AddRemovedItems/nuget.config",
+          "/home/cookay/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net472"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {},
+          "https://nuget.bepinex.dev/v3/index.json": {}
+        },
+        "frameworks": {
+          "net472": {
+            "projectReferences": {}
+          }
+        }
+      },
+      "frameworks": {
+        "net472": {
+          "dependencies": {
+            "BepInEx.Analyzers": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.0.8, )"
+            },
+            "BepInEx.BaseLib": {
+              "target": "Package",
+              "version": "[5.4.21, )"
+            },
+            "BepInEx.Core": {
+              "target": "Package",
+              "version": "[5.4.21, )"
+            },
+            "BepInEx.PluginInfoProps": {
+              "target": "Package",
+              "version": "[2.1.0, )"
+            },
+            "Microsoft.NETFramework.ReferenceAssemblies": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.0.3, )"
+            },
+            "SubnauticaZero.Nautilus": {
+              "target": "Package",
+              "version": "[1.0.0-pre.32, )"
+            }
+          }
+        }
+      },
+      "runtimes": {
+        "win": {
+          "#import": []
+        },
+        "win-x64": {
+          "#import": []
+        },
+        "win-x86": {
+          "#import": []
+        }
+      }
+    }
+  }
+}
