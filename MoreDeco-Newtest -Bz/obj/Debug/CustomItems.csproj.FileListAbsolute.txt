@@ -1,6 +1,0 @@
-C:\Users\Cookay\source\repos\MoreLockers\MoreDeco\bin\Debug\CustomItems.dll
-D:\all my projects\updated mods project\MoreDeco-Newtest\obj\Debug\CustomItems.csproj.AssemblyReference.cache
-D:\all my projects\updated mods project\MoreDeco-Newtest\obj\Debug\CustomItems.GeneratedMSBuildEditorConfig.editorconfig
-D:\all my projects\updated mods project\MoreDeco-Newtest\obj\Debug\MyPluginInfo.cs
-D:\all my projects\updated mods project\MoreDeco-Newtest\obj\Debug\CustomItems.csproj.CoreCompileInputs.cache
-D:\all my projects\updated mods project\MoreDeco-Newtest\obj\Debug\CustomItems.dll
