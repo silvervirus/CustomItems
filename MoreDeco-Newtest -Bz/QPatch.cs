@@ -1,27 +1,26 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.IO;
-using UnityEngine;
-using CustomItems.BatteryPrefab;
-using CustomItems.BatteriesLoader;
-using CustomItems.Loader;
-using Customitems.info;
-using Debug = UnityEngine.Debug;
-using Nautilus.Utility;
-using static HandReticle;
-using PrefabUtils = Nautilus.Utility.PrefabUtils;
-using static Nautilus.Assets.PrefabTemplates.FabricatorTemplate;
 using System.Diagnostics.Eventing.Reader;
+using System.IO;
 using BepInEx;
+using CustomBatteries.API;
+using CustomItems;
+using CustomItems.BatteriesLoader;
+using CustomItems.BatteryPrefab;
+using Customitems.info;
+using CustomItems.knife;
+using CustomItems.Loader;
 using HarmonyLib;
 using Nautilus.Assets.Gadgets;
 using Nautilus.Assets.PrefabTemplates;
+using Nautilus.Extensions;
 using Nautilus.Handlers;
-using rail;
+using Nautilus.Utility;
 using RamuneLib.Extensions;
-using static RootMotion.FinalIK.RagdollUtility;
-using CustomBatteries.API;
-using CustomItems;
+using UnityEngine;
+using Debug = UnityEngine.Debug;
+using Object = UnityEngine.Object;
+using PrefabUtils = Nautilus.Utility.PrefabUtils;
 
 namespace Customitems.main
 {
@@ -176,10 +175,7 @@ namespace Customitems.main
             LoadBatteryRequirements();
            
         }
-        public void Start()
-        {
-
-        }
+       
         private void Maketabs()
         {
             Console.Write("Loading Tabs");
@@ -376,7 +372,8 @@ namespace Customitems.main
                             Sprite eggSprite = RamuneLib.Utils.ImageUtils.GetSprite(eggspriteName);
 
                             // Create and register the custom egg prefab
-                            BasicEggPrefab prefab = new BasicEggPrefab(internalName.Trim(), eggDisplayName, eggDescription, eggObjectName, eggSprite);
+                            BasicEggPrefab prefab = new BasicEggPrefab(internalName.Trim(), eggDisplayName,
+                                eggDescription, eggObjectName, eggSprite);
 
                             // Create CloneTemplate using ResourceId
                             CloneTemplate cloneTemplate = new CloneTemplate(prefab.Info, eggData.ResourceId);
@@ -405,20 +402,23 @@ namespace Customitems.main
                                 };
 
                                 prefab.SetUnlock(TechType.ArcticPeeper);
+
+                
                                 prefab.SetPdaGroupCategory(TechGroup.Personal, TechCategory.Tools);
                                 string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                 prefab.SetRecipeFromJson(recipeText);
-                                CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator, prefab.Info.TechType, new string[]
-                                     {
-                                   "CIS",
-                                   "FA"
-                                     });
+                                CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator, prefab.Info.TechType,
+                                    new string[]
+                                    {
+                                        "CIS",
+                                        "FA"
+                                    });
                                 prefab.SetGameObject(setitem);
                                 prefab.Register();
                                 SurvivalHandler.GiveHealthOnConsume(prefab.Info.TechType, eggData.Health, true);
 
                             }
-                           
+
                             else if (eggData.MedKititem == true || eggData.Tankitem == true)
                             {
                                 var medkit = new CloneTemplate(prefab.Info, TechType.FirstAidKit);
@@ -432,43 +432,47 @@ namespace Customitems.main
                                 };
 
                                 prefab.SetUnlock(TechType.ArcticPeeper);
+
+                
                                 prefab.SetPdaGroupCategory(TechGroup.Personal, TechCategory.Tools);
                                 string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                 prefab.SetRecipeFromJson(recipeText);
 
                                 if (eggData.MedKititem == true)
                                 {
-                                   
-                                        
 
-                                       
-                                        CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator, prefab.Info.TechType, new string[]
-                                         {
-                                   "CIS",
-                                   "FA"
-                                         });
-                                        prefab.SetGameObject(medkit);
-                                        prefab.Register();
-                                        if (eggData.Heal == true)
+
+
+
+                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator, prefab.Info.TechType,
+                                        new string[]
                                         {
-                                            SurvivalHandler.GiveHealthOnConsume(prefab.Info.TechType, eggData.Health, true);
-                                        }
-                                    
+                                            "CIS",
+                                            "FA"
+                                        });
+                                    prefab.SetGameObject(medkit);
+                                    prefab.Register();
+                                    if (eggData.Heal == true)
+                                    {
+                                        SurvivalHandler.GiveHealthOnConsume(prefab.Info.TechType, eggData.Health, true);
+                                    }
+
                                 }
                                 else if (eggData.Oxygenitem == true)
                                 {
 
-                                    
-                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator, prefab.Info.TechType, new string[]
-                                 {
-                                              "CIS",
-                                                "OX"
-                                 });
+
+                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator, prefab.Info.TechType,
+                                        new string[]
+                                        {
+                                            "CIS",
+                                            "OX"
+                                        });
                                     prefab.SetGameObject(medkit);
                                     prefab.Register();
-                                    
-                                        SurvivalHandler.GiveOxygenOnConsume(prefab.Info.TechType, eggData.Oxygen, true);
-                                    
+
+                                    SurvivalHandler.GiveOxygenOnConsume(prefab.Info.TechType, eggData.Oxygen, true);
+
                                 }
                             }
                             else if (eggData.OyxgenTankitem == true)
@@ -477,25 +481,156 @@ namespace Customitems.main
                                 tankitem.ModifyPrefab += obj =>
                                 {
                                     obj.EnsureComponent<Pickupable>();
-                                    obj.GetAllComponentsInChildren<Oxygen>().Do(o => o.oxygenCapacity = eggData.TankOxygen);
+                                    obj.GetAllComponentsInChildren<Oxygen>()
+                                        .Do(o => o.oxygenCapacity = eggData.TankOxygen);
 
 
 
                                 };
                                 prefab.SetEquipment(EquipmentType.Tank);
                                 prefab.SetUnlock(TechType.ArcticPeeper);
+
+                
                                 prefab.SetPdaGroupCategory(TechGroup.Personal, TechCategory.Equipment);
                                 string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                 prefab.SetRecipeFromJson(recipeText);
-                                CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator, prefab.Info.TechType, new string[]
-                                 {
-                                 "CIS",
-                                 "EQP"
-                                 });
+                                CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator, prefab.Info.TechType,
+                                    new string[]
+                                    {
+                                        "CIS",
+                                        "EQP"
+                                    });
                                 prefab.SetGameObject(tankitem);
                                 prefab.Register();
 
 
+                            }
+                            else if (eggData.IsBattery)
+                            {
+                                var tankitem = new CloneTemplate(prefab.Info, "d4bfebc0-a5e6-47d3-b4a7-d5e47f614ed6");
+                                tankitem.ModifyPrefab += obj =>
+                                {
+                                    GameObject model = obj.transform.Find("model/battery_01").gameObject;
+
+                                    // Remove unnecessary components
+                                    GameObject.DestroyImmediate(obj.GetComponent<EnergyMixin>());
+                                    GameObject.DestroyImmediate(obj.GetComponent<Pickupable>());
+                                    GameObject.DestroyImmediate(obj.GetComponent<BoxCollider>());
+                                    ConstructableFlags constructableFlags = ConstructableFlags.Inside | ConstructableFlags.Rotatable | ConstructableFlags.Ground | ConstructableFlags.Submarine | ConstructableFlags.Rotatable | ConstructableFlags.AllowedOnConstructable;
+                                    Nautilus.Utility.MaterialUtils.ApplySNShaders(obj);
+                                    // Match the collider to the model's bounds
+                                    Renderer modelRenderer = model.GetComponent<Renderer>();
+                                    if (modelRenderer != null)
+                                    {
+                                        CapsuleCollider mainModelCollider = model.EnsureComponent<CapsuleCollider>();
+
+                                        // Align center, but raise it so the item sits properly on flat surfaces
+                                        Vector3 boundsCenter = modelRenderer.bounds.center - model.transform.position;
+                                        boundsCenter.y += modelRenderer.bounds.extents.y / 2f; // Lift by half the height
+
+                                        mainModelCollider.center = boundsCenter;
+
+                                        // Approximate radius and height from model bounds
+                                        mainModelCollider.radius = Mathf.Max(modelRenderer.bounds.size.x, modelRenderer.bounds.size.z) / 2f;
+                                        mainModelCollider.height = modelRenderer.bounds.size.y;
+
+                                        // Set the capsule's direction (0 = X, 1 = Y, 2 = Z)
+                                        mainModelCollider.direction = 1; // Y-axis by default
+                                    }
+
+
+                                
+                                 
+
+
+
+
+
+                                    // Add necessary components for it to be built
+                                    PrefabUtils.AddConstructable(obj, prefab.Info.TechType, constructableFlags, model);
+
+
+                                };
+                                prefab.SetUnlock(TechType.ArcticPeeper);
+
+                
+                                string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
+                                prefab.SetPdaGroupCategory(TechGroup.InteriorModules, TechCategory.InteriorModule).SetBuildable();
+                                prefab.WithAutoUnlock();
+                                prefab.SetRecipeFromJson(recipeText);
+                                prefab.SetGameObject(tankitem);
+                                prefab.Register();
+                            }
+                            else if (eggData.IsKnife)
+                            {
+                                var tankitem = new CloneTemplate(prefab.Info, TechType.Knife);
+                                tankitem.ModifyPrefab += obj =>
+                                {
+                                    var renderer = obj.transform.Find("knife_01")?.GetComponent<MeshRenderer>();
+                                    if (renderer != null)
+                                    {
+                                        renderer.material.mainTexture = RamuneLib.Utils.ImageUtils.GetTexture(internalName);
+                                        renderer.material.SetTexture("_SpecTex", RamuneLib.Utils.ImageUtils.GetTexture(internalName));
+                                        renderer.material.SetTexture("_Illum", RamuneLib.Utils.ImageUtils.GetTexture(internalName + "_illum"));
+                                       // renderer.material.SetTexture("_BumpMap", RamuneLib.Utils.ImageUtils.GetTexture(internalName + "_normal"));
+                                    }
+
+                                    var oldBlade = obj.GetComponent<Knife>();
+                                    var newKnife = obj.AddComponent<CustomKnife>().CopyComponent(oldBlade);
+                                    Object.DestroyImmediate(oldBlade);
+
+                                    newKnife.Configure(eggData.Hitforce, 1f + eggData.Damage);
+                                    newKnife.attackDist = 1f + eggData.Range;
+                                  
+                                    
+
+                                   
+
+
+
+
+                                };
+                                prefab.SetUnlock(TechType.ArcticPeeper);
+                                prefab.SetEquipment(EquipmentType.Hand).WithQuickSlotType(QuickSlotType.Selectable);
+                                string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
+                                prefab.SetPdaGroupCategory(TechGroup.Personal, TechCategory.Equipment);
+                                prefab.SetRecipeFromJson(recipeText);
+                                prefab.SetGameObject(tankitem);
+                         
+                                prefab.Register();
+                            }
+                            else if (eggData.IsHotKnife)
+                            {
+                                var tankitem = new CloneTemplate(prefab.Info, TechType.HeatBlade);
+                                tankitem.ModifyPrefab += obj =>
+                                {
+                                    var renderer = obj.transform.Find("knife_01_hot")?.GetComponent<Renderer>();
+                                    if (renderer != null)
+                                    {
+                                        renderer.material.mainTexture = RamuneLib.Utils.ImageUtils.GetTexture(internalName);
+                                        renderer.material.SetTexture("_SpecTex", RamuneLib.Utils.ImageUtils.GetTexture(internalName));
+                                        renderer.material.SetTexture("_Illum", RamuneLib.Utils.ImageUtils.GetTexture(internalName + "_illum"));
+                                        //renderer.material.SetTexture("_BumpMap", RamuneLib.Utils.ImageUtils.GetTexture(internalName + "_normal"));
+                                    }
+
+                                    var oldBlade = obj.GetComponent<HeatBlade>();
+                                    var newKnife = obj.AddComponent<CustomHotKnife>().CopyComponent(oldBlade);
+                                    Object.DestroyImmediate(oldBlade);
+
+                                    newKnife.Configure(eggData.Hitforce, 1f + eggData.Damage);
+                                    newKnife.attackDist = 1f + eggData.Range;
+
+
+
+
+                                };
+                                prefab.SetUnlock(TechType.ArcticPeeper);
+                                prefab.SetEquipment(EquipmentType.Hand).WithQuickSlotType(QuickSlotType.Selectable);
+                                string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
+                                prefab.SetPdaGroupCategory(TechGroup.Personal, TechCategory.Equipment);
+                                prefab.SetRecipeFromJson(recipeText);
+                                prefab.SetGameObject(tankitem);
+                                prefab.Register();
                             }
                             else if (eggData.Isfood == true)
                             {
@@ -521,6 +656,8 @@ namespace Customitems.main
                                 };
 
                                 prefab.SetUnlock(TechType.ArcticPeeper);
+
+                
                                 prefab.SetPdaGroupCategory(TechGroup.Survival, TechCategory.FoodAndDrinks);
                                 string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                 prefab.SetRecipeFromJson(recipeText);
@@ -559,6 +696,8 @@ namespace Customitems.main
                                 };
 
                                 prefab.SetUnlock(TechType.ArcticPeeper);
+
+                
                                 prefab.SetPdaGroupCategory(TechGroup.Survival, TechCategory.FoodAndDrinks);
                                 string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                 prefab.SetRecipeFromJson(recipeText);
@@ -620,12 +759,6 @@ namespace Customitems.main
                                 prefab.Register();
                             }
 
-
-
-                           
-                                   
-                                
-                            
                             else if (eggData.Placeable == true)
                             {
                                 var poster = new CloneTemplate(prefab.Info, eggData.ResourceId);
@@ -973,7 +1106,7 @@ namespace Customitems.main
                                     {
                                         obj.transform.localPosition = new Vector3(0f, 1.85f, 0f);
                                         var animator = obj.GetComponentInChildren<Animator>();
-                                        if (animator != null)
+                                        if (animator is not null)
                                         {
                                             animator.enabled = false;
                                         }
@@ -1099,6 +1232,7 @@ namespace Customitems.main
                                         // Change the layer of the main model to the Default layer to avoid red placement indicators
                                         model.layer = LayerMask.NameToLayer("Default");
                                     }
+                                    
                                     else if (eggData.BuildableAddCollider == true)
                                     {
                                         foreach (Transform child in obj.transform)
@@ -1129,290 +1263,55 @@ namespace Customitems.main
                                     }
                                     else if (eggData.NothingNeeded == true)
                                     {
-                                       
-
                                         // No modifications needed
                                         if (eggData.Ping)
                                         {
                                             ping = obj.AddComponent<PingInstance>();
-
+                                            
                                             ping.colorIndex = 0;
-                                            ping._label = "None";
                                             ping.range = 10;
                                             ping.origin = model.transform;
-
                                         }
-                                        if (eggData.Base == true)
+    
+                                        PingInstance pingInstance = obj.GetComponent<PingInstance>();
+                                        if (pingInstance != null)
                                         {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = BasePing;
-                                            obj.GetComponent<PingInstance>().SetLabel("Base");
-
-                                        }
-                                        else if (eggData.BaseL == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = BaseLargePing;
-                                            obj.GetComponent<PingInstance>().SetLabel("LargeBase");
-
-                                        }
-                                        else if (eggData.Beacon == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = BeaconPing;
-                                            obj.GetComponent<PingInstance>().SetLabel("Beacon");
-
-                                        }
-                                        else if (eggData.Signel == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = Signalping;
-                                            obj.GetComponent<PingInstance>().SetLabel("Signal");
-
-                                        }
-                                        else if (eggData.Custom == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = testping;
-                                            obj.GetComponent<PingInstance>().SetLabel("Place Of Intrest");
-
-                                        }
-                                        else if (eggData.Egg == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = EggPing;
-                                            obj.GetComponent<PingInstance>().SetLabel("Egg Location");
-
-                                        }
-                                        else if (eggData.Creature == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = CreaturePing;
-                                            obj.GetComponent<PingInstance>().SetLabel("Creature");
-
-                                        }
-                                        else if (eggData.Flag1 == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = Flag1Ping;
-                                            obj.GetComponent<PingInstance>().SetLabel("Flag1");
-
-                                        }
-                                        else if (eggData.Flag2 == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = Flag2Ping;
-                                            obj.GetComponent<PingInstance>().SetLabel("Flag2");
-
-                                        }
-                                        else if (eggData.Flag3 == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = Flag3Ping;
-                                            obj.GetComponent<PingInstance>().SetLabel("Flag3");
-
-                                        }
-                                        else if (eggData.Flag4 == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = Flag4Ping;
-                                            obj.GetComponent<PingInstance>().SetLabel("flag4");
-
-                                        }
-                                        else if (eggData.Flag5 == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = Flag5Ping;
-                                            obj.GetComponent<PingInstance>().SetLabel("flag5");
-
-                                        }
-                                        else if (eggData.Flag6 == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = Flag6Ping;
-                                            obj.GetComponent<PingInstance>().SetLabel("Flag6");
-
-                                        }
-                                        else if (eggData.Flag7 == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = Flag7Ping;
-                                            obj.GetComponent<PingInstance>().SetLabel("Flag7");
-
-                                        }
-                                        else if (eggData.Alien1 == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = Alien1Ping;
-                                            obj.GetComponent<PingInstance>().SetLabel("Alien1");
-
-                                        }
-                                        else if (eggData.Alien2 == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = Alien2Ping;
-                                            obj.GetComponent<PingInstance>().SetLabel("Alien2");
-                                        }
-                                        else if (eggData.Alien3 == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = Alien3Ping;
-                                            obj.GetComponent<PingInstance>().SetLabel("Alien3");
-
-                                        }
-                                        else if (eggData.Alien4 == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = Alien4Ping;
-                                            obj.GetComponent<PingInstance>().SetLabel("Alien4");
-
-                                        }
-                                        else if (eggData.Alien5 == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = Alien5Ping;
-                                            obj.GetComponent<PingInstance>().SetLabel("Alien5");
-
-                                        }
-                                        else if (eggData.Alien6 == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = Alien6Ping;
-                                            obj.GetComponent<PingInstance>().SetLabel("Alien6");
-
-                                        }
-                                        else if (eggData.Drill == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = DrillPing;
-                                            obj.GetComponent<PingInstance>().SetLabel("Drillable");
-
-                                        }
-                                        else if (eggData.Ship == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = Ship;
-                                            obj.GetComponent<PingInstance>().SetLabel("Ship");
-
-                                        }
-                                        else if (eggData.Check == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = Check;
-                                            obj.GetComponent<PingInstance>().SetLabel("Checked");
-
-                                        }
-                                        else if (eggData.Check2 == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = Check2;
-                                            obj.GetComponent<PingInstance>().SetLabel("Checked");
-
-                                        }
-                                        else if (eggData.CreepVine == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = Creepvine;
-                                            obj.GetComponent<PingInstance>().SetLabel("CreepVine Location");
-
-                                        }
-                                        else if (eggData.Cross == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = Cross;
-                                            obj.GetComponent<PingInstance>().SetLabel("Heal Item Location");
-
-                                        }
-                                        else if (eggData.Chest == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = Chest;
-                                            obj.GetComponent<PingInstance>().SetLabel("Chest Location");
-
-                                        }
-                                        else if (eggData.Arrow == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = Arrow;
-                                            obj.GetComponent<PingInstance>().SetLabel("ThisWay");
-
-                                        }
-                                        else if (eggData.Fire == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = Fire;
-                                            obj.GetComponent<PingInstance>().SetLabel("FIRE");
-
-                                        }
-                                        else if (eggData.Acube == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = Acube;
-                                            obj.GetComponent<PingInstance>().SetLabel("Alien Location");
-
-                                        }
-                                        else if (eggData.Triangle == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = TriA;
-                                            obj.GetComponent<PingInstance>().SetLabel("Marked Location");
-
-                                        }
-                                       
-                                        else if (eggData.LifeSupport == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = LifeSupport;
-                                            obj.GetComponent<PingInstance>().SetLabel("Breathable Location");
-
-                                        }
-                                        else if (eggData.Power == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = Power;
-                                            obj.GetComponent<PingInstance>().SetLabel("Power Active");
-
-                                        }
-                                        else if (eggData.Epoint == true)
-                                        {
-
-
-                                            obj.GetComponent<PingInstance>().pingType = Epoint;
-                                            obj.GetComponent<PingInstance>().SetLabel("Location");
-
+                                            pingInstance._label = eggData.FriendlyName;
+        
+                                            if (eggData.Base)         pingInstance.pingType = BasePing;
+                                            else if (eggData.BaseL)   pingInstance.pingType = BaseLargePing;
+                                            else if (eggData.Beacon)  pingInstance.pingType = BeaconPing;
+                                            else if (eggData.Signel)  pingInstance.pingType = Signalping;
+                                            else if (eggData.Custom)  pingInstance.pingType = testping;
+                                            else if (eggData.Egg)     pingInstance.pingType = EggPing;
+                                            else if (eggData.Creature) pingInstance.pingType = CreaturePing;
+                                            else if (eggData.Flag1)   pingInstance.pingType = Flag1Ping;
+                                            else if (eggData.Flag2)   pingInstance.pingType = Flag2Ping;
+                                            else if (eggData.Flag3)   pingInstance.pingType = Flag3Ping;
+                                            else if (eggData.Flag4)   pingInstance.pingType = Flag4Ping;
+                                            else if (eggData.Flag5)   pingInstance.pingType = Flag5Ping;
+                                            else if (eggData.Flag6)   pingInstance.pingType = Flag6Ping;
+                                            else if (eggData.Flag7)   pingInstance.pingType = Flag7Ping;
+                                            else if (eggData.Alien1)  pingInstance.pingType = Alien1Ping;
+                                            else if (eggData.Alien2)  pingInstance.pingType = Alien2Ping;
+                                            else if (eggData.Alien3)  pingInstance.pingType = Alien3Ping;
+                                            else if (eggData.Alien4)  pingInstance.pingType = Alien4Ping;
+                                            else if (eggData.Alien5)  pingInstance.pingType = Alien5Ping;
+                                            else if (eggData.Alien6)  pingInstance.pingType = Alien6Ping;
+                                            else if (eggData.Drill)   pingInstance.pingType = DrillPing;
+                                            else if (eggData.Ship)    pingInstance.pingType = Ship;
+                                            else if (eggData.Check)   pingInstance.pingType = Check;
+                                            else if (eggData.Check2)  pingInstance.pingType = Check2;
+                                            else if (eggData.CreepVine) pingInstance.pingType = Creepvine;
+                                            else if (eggData.Cross)   pingInstance.pingType = Cross;
+                                            else if (eggData.Chest)   pingInstance.pingType = Chest;
+                                            else if (eggData.Arrow)   pingInstance.pingType = Arrow;
+                                            else if (eggData.Fire)    pingInstance.pingType = Fire;
+                                            else if (eggData.Acube)   pingInstance.pingType = Acube;
+                                            else if (eggData.Triangle) pingInstance.pingType = TriA;
+                                            else if (eggData.LifeSupport) pingInstance.pingType = LifeSupport;
+                                            else if (eggData.Power)   pingInstance.pingType = Power;
+                                            else if (eggData.Epoint) pingInstance.pingType = Epoint;
                                         }
                                     }
                                     else if (eggData.Pen == true)
@@ -1434,6 +1333,7 @@ namespace Customitems.main
                                             obj.transform.Find(eggData.ExtraObjectName).parent = model.transform;
                                             obj.transform.Find(eggData.ExtraObjectName2).parent = model.transform;
                                         }
+                                      
                                         
 
 
@@ -1507,8 +1407,8 @@ namespace Customitems.main
                         string eggDisplayName = eggData.FriendlyName;
                         string eggDescription = eggData.Tooltip;
                         string eggInterName = eggData.InternalName;
-                        string eggspriteName = eggData.Spritename;
-                        string eggObjectName = eggData.ObjectName;
+                       // string eggspriteName = eggData.Spritename;
+                        //string eggObjectName = eggData.ObjectName;
                         string eggTechtype1 = eggData.EggTechtype;
                         string eggTechtype2 = eggData.EggTechtype2;
                         string eggTechtype3 = eggData.EggTechtype3;
@@ -1655,22 +1555,11 @@ namespace Customitems.main
                         string eggDescription = eggData.Tooltip;
                         string eggInterName = eggData.InternalName;
                         
-                        string eggObjectName = eggData.ObjectName;
-                        string eggTechtype1 = eggData.EggTechtype;
-                        string eggTechtype2 = eggData.EggTechtype2;
-                        string eggTechtype3 = eggData.EggTechtype3;
-                        string eggTechtype4 = eggData.EggTechtype4;
-                        string eggTechtype5 = eggData.EggTechtype5;
-                        string eggTechtype6 = eggData.EggTechtype6;
+                       // string eggObjectName = eggData.ObjectName;
+                       
                         string SpriteName = eggData.Spritename;
                         string unlockTechtype = eggData.unlockTechtype;
-                        // Convert eggData.TechType to TechType to get the sprite
-                        TechType eggTechTypes = GetTechType(eggTechtype1);
-                        TechType eggTechTypes1 = GetTechType(eggTechtype2);
-                        TechType eggTechTypes2 = GetTechType(eggTechtype3);
-                        TechType eggTechTypes3 = GetTechType(eggTechtype4);
-                        TechType eggTechTypes4 = GetTechType(eggTechtype5);
-                        TechType eggTechTypes5 = GetTechType(eggTechtype6);
+                       
                        
                         TechType setUnlockTechType = GetTechType(unlockTechtype);
                         
@@ -1711,6 +1600,8 @@ namespace Customitems.main
                                     };
 
                                     prefab.SetUnlock(TechType.ArcticPeeper);
+
+                
                                     prefab.SetPdaGroupCategory(TechGroup.Survival, TechCategory.FoodAndDrinks);
                                     string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                     prefab.SetRecipeFromJson(recipeText);
@@ -1750,6 +1641,8 @@ namespace Customitems.main
                                     };
 
                                     prefab.SetUnlock(TechType.ArcticPeeper);
+
+                
                                     prefab.SetPdaGroupCategory(TechGroup.Survival, TechCategory.FoodAndDrinks);
                                     string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                     prefab.SetRecipeFromJson(recipeText);
@@ -1776,6 +1669,8 @@ namespace Customitems.main
                                     };
 
                                     prefab.SetUnlock(TechType.ArcticPeeper);
+
+                
                                     prefab.SetPdaGroupCategory(TechGroup.Survival, TechCategory.FoodAndDrinks);
                                     string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                     prefab.SetRecipeFromJson(recipeText);
@@ -1841,22 +1736,12 @@ namespace Customitems.main
                         string eggDescription = eggData.Tooltip;
                         string eggInterName = eggData.InternalName;
                         
-                        string eggObjectName = eggData.ObjectName;
-                        string eggTechtype1 = eggData.EggTechtype;
-                        string eggTechtype2 = eggData.EggTechtype2;
-                        string eggTechtype3 = eggData.EggTechtype3;
-                        string eggTechtype4 = eggData.EggTechtype4;
-                        string eggTechtype5 = eggData.EggTechtype5;
-                        string eggTechtype6 = eggData.EggTechtype6;
+                        //string eggObjectName = eggData.ObjectName;
+                       
                         string SpriteName = eggData.Spritename;
                         string unlockTechtype = eggData.unlockTechtype;
                         // Convert eggData.TechType to TechType to get the sprite
-                        TechType eggTechTypes = GetTechType(eggTechtype1);
-                        TechType eggTechTypes1 = GetTechType(eggTechtype2);
-                        TechType eggTechTypes2 = GetTechType(eggTechtype3);
-                        TechType eggTechTypes3 = GetTechType(eggTechtype4);
-                        TechType eggTechTypes4 = GetTechType(eggTechtype5);
-                        TechType eggTechTypes5 = GetTechType(eggTechtype6);
+                        
                        
                         TechType setUnlockTechType = GetTechType(unlockTechtype);
                         
@@ -1897,6 +1782,8 @@ namespace Customitems.main
                                     };
 
                                     prefab.SetUnlock(TechType.ArcticPeeper);
+
+                
                                     prefab.SetPdaGroupCategory(TechGroup.Survival, TechCategory.FoodAndDrinks);
                                     string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                     prefab.SetRecipeFromJson(recipeText);
@@ -1925,6 +1812,8 @@ namespace Customitems.main
                                     };
 
                                     prefab.SetUnlock(TechType.ArcticPeeper);
+
+                
                                     prefab.SetPdaGroupCategory(TechGroup.Survival, TechCategory.FoodAndDrinks);
                                     string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                     prefab.SetRecipeFromJson(recipeText);
@@ -1951,6 +1840,8 @@ namespace Customitems.main
                                     };
 
                                     prefab.SetUnlock(TechType.ArcticPeeper);
+
+                
                                     prefab.SetPdaGroupCategory(TechGroup.Survival, TechCategory.FoodAndDrinks);
                                     string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                     prefab.SetRecipeFromJson(recipeText);
@@ -2016,22 +1907,11 @@ namespace Customitems.main
                         string eggDescription = eggData.Tooltip;
                         string eggInterName = eggData.InternalName;
                         
-                        string eggObjectName = eggData.ObjectName;
-                        string eggTechtype1 = eggData.EggTechtype;
-                        string eggTechtype2 = eggData.EggTechtype2;
-                        string eggTechtype3 = eggData.EggTechtype3;
-                        string eggTechtype4 = eggData.EggTechtype4;
-                        string eggTechtype5 = eggData.EggTechtype5;
-                        string eggTechtype6 = eggData.EggTechtype6;
+                        //string eggObjectName = eggData.ObjectName;
+                     
                         string SpriteName = eggData.Spritename;
                         string unlockTechtype = eggData.unlockTechtype;
-                        // Convert eggData.TechType to TechType to get the sprite
-                        TechType eggTechTypes = GetTechType(eggTechtype1);
-                        TechType eggTechTypes1 = GetTechType(eggTechtype2);
-                        TechType eggTechTypes2 = GetTechType(eggTechtype3);
-                        TechType eggTechTypes3 = GetTechType(eggTechtype4);
-                        TechType eggTechTypes4 = GetTechType(eggTechtype5);
-                        TechType eggTechTypes5 = GetTechType(eggTechtype6);
+                      
                        
                         TechType setUnlockTechType = GetTechType(unlockTechtype);
                         
@@ -2061,6 +1941,8 @@ namespace Customitems.main
                                     };
 
                                     prefab.SetUnlock(TechType.ArcticPeeper);
+
+                
                                     prefab.SetPdaGroupCategory(TechGroup.Survival, TechCategory.FoodAndDrinks);
                                     string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                     prefab.SetRecipeFromJson(recipeText);
@@ -2089,6 +1971,8 @@ namespace Customitems.main
                                     };
 
                                     prefab.SetUnlock(TechType.ArcticPeeper);
+
+                
                                     prefab.SetPdaGroupCategory(TechGroup.Survival, TechCategory.FoodAndDrinks);
                                     string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                     prefab.SetRecipeFromJson(recipeText);
@@ -2115,6 +1999,8 @@ namespace Customitems.main
                                     };
 
                                     prefab.SetUnlock(TechType.ArcticPeeper);
+
+                
                                     prefab.SetPdaGroupCategory(TechGroup.Survival, TechCategory.FoodAndDrinks);
                                     string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                     prefab.SetRecipeFromJson(recipeText);
@@ -2180,23 +2066,12 @@ namespace Customitems.main
                         string eggDescription = eggData.Tooltip;
                         string eggInterName = eggData.InternalName;
                         
-                        string eggObjectName = eggData.ObjectName;
-                        string eggTechtype1 = eggData.EggTechtype;
-                        string eggTechtype2 = eggData.EggTechtype2;
-                        string eggTechtype3 = eggData.EggTechtype3;
-                        string eggTechtype4 = eggData.EggTechtype4;
-                        string eggTechtype5 = eggData.EggTechtype5;
-                        string eggTechtype6 = eggData.EggTechtype6;
+                        //string eggObjectName = eggData.ObjectName;
+                      
                         string SpriteName = eggData.Spritename;
                         string unlockTechtype = eggData.unlockTechtype;
                         // Convert eggData.TechType to TechType to get the sprite
-                        TechType eggTechTypes = GetTechType(eggTechtype1);
-                        TechType eggTechTypes1 = GetTechType(eggTechtype2);
-                        TechType eggTechTypes2 = GetTechType(eggTechtype3);
-                        TechType eggTechTypes3 = GetTechType(eggTechtype4);
-                        TechType eggTechTypes4 = GetTechType(eggTechtype5);
-                        TechType eggTechTypes5 = GetTechType(eggTechtype6);
-                       
+                      
                         TechType setUnlockTechType = GetTechType(unlockTechtype);
                         
                         foreach (string internalName in eggInterName.Split(','))
@@ -2225,6 +2100,8 @@ namespace Customitems.main
                                     };
 
                                     prefab.SetUnlock(TechType.ArcticPeeper);
+
+                
                                     prefab.SetPdaGroupCategory(TechGroup.Survival, TechCategory.FoodAndDrinks);
                                     string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                     prefab.SetRecipeFromJson(recipeText);
@@ -2253,6 +2130,8 @@ namespace Customitems.main
                                     };
 
                                     prefab.SetUnlock(TechType.ArcticPeeper);
+
+                
                                     prefab.SetPdaGroupCategory(TechGroup.Survival, TechCategory.FoodAndDrinks);
                                     string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                     prefab.SetRecipeFromJson(recipeText);
@@ -2279,6 +2158,8 @@ namespace Customitems.main
                                     };
 
                                     prefab.SetUnlock(TechType.ArcticPeeper);
+
+                
                                     prefab.SetPdaGroupCategory(TechGroup.Survival, TechCategory.FoodAndDrinks);
                                     string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                     prefab.SetRecipeFromJson(recipeText);
@@ -2326,6 +2207,6 @@ namespace Customitems.main
             // Handle error case, maybe return a default TechType
             return TechType.None;
         }
-
+       
     }
 }
