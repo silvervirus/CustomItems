@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.IO;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace CustomItems.Loader
 {
@@ -85,6 +86,26 @@ namespace CustomItems.Loader
         public string ExtraObjectName { get; set; }
         public string ExtraObjectName2 { get; set; }
         public bool IsArtifact { get; set; }
+        public bool BBox { get; set; }
+        
+        public string TabID{ get; set; }
+        public bool Maintab { get; set; }
+        public bool Subtab { get; set; }
+        public bool Sibtab { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public CraftTree.Type TreeType { get; set; } = CraftTree.Type.Fabricator;
+
+        public string Path { get; set; } // Tab path as a string, e.g. "CIS,Food"
+        public string TabMainName{ get; set; }
+        public string TabSubName{ get; set; }
+        public string TabSibName{ get; set; }
+        public string SpriteName{ get; set; }
+        public bool IsBattery { get; set; }
+        public bool IsKnife { get; set; }
+        public float Hitforce { get; set; }
+        public bool IsHotKnife { get; set; }
+        public float Damage { get; set; }
+        public float Range { get; set; }
         public bool IsBasicArtifact { get; set; }
         public bool IsAnArtifact { get; set; }
         public bool IsTable { get; set; }
@@ -110,26 +131,49 @@ namespace CustomItems.Loader
         public bool IsCold { get; set; }
         public bool IsWarmOrCold { get; set; }
         public bool Isdrink { get; set; }
-        
+        public bool UseCustomTab { get; set; }
+        public bool UseDefaultTab { get; set; }
+        public bool UseItemTab { get; set; }
         
         public bool CF3 { get; set; }
+        public string TabName { get; set; } 
+        
+        //Ingredients
         public bool Ingredients { get; set; }
-        public bool PreIngredients { get; set; }
-        public bool PPIngredients { get; set; }
-        public bool PPPIngredients { get; set; }
-        public string TabName { get; set; }    
         public bool Ifood { get; set; }
         public bool IItem { get; set; }
         public bool Idrink { get; set; }
+      
+        //Advanced Ingredients
+        public bool PreIngredients { get; set; }
         public bool PIfood { get; set; }
         public bool PIItem { get; set; }
         public bool PIdrink { get; set; }
+        public bool AdvancedIngredients { get; set; }
+        public bool Advancedfood { get; set; }
+        public bool AdvancedItem { get; set; }
+        public bool Advanceddrink { get; set; }
+        //Combined Ingredients
+        public bool PPIngredients { get; set; }
         public bool PPIfood { get; set; }
         public bool PPIItem { get; set; }
         public bool PPIdrink { get; set; }
+        public bool CombinedIngredients { get; set; }
+        public bool CombinedFood { get; set; }
+        public bool CombinedItem { get; set; }
+        public bool Combineddrink { get; set; }
+         //Basic Ingredients 
+        public bool PPPIngredients { get; set; }
+      
         public bool PPPIfood { get; set; }
-        public bool PPPIItem { get; set; }
+        public bool PPPIItem { get; set; } 
         public bool PPPIdrink { get; set; }
+       
+        public bool BasicIngredients { get; set; }
+        public bool BasicFood { get; set; }
+        public bool BasicDrink { get; set; }
+        public bool BasicItem { get; set; }
+     
         
         public bool ChipItem { get; set; }
         public bool HealItem { get; set; }
