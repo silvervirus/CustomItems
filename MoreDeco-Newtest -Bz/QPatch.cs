@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
-using System.IO;
+using System.Data.Linq;
 using BepInEx;
 using CustomBatteries.API;
 using CustomItems;
@@ -10,6 +9,7 @@ using CustomItems.BatteryPrefab;
 using Customitems.info;
 using CustomItems.knife;
 using CustomItems.Loader;
+using CustomItems.tabsLoader;
 using HarmonyLib;
 using Nautilus.Assets.Gadgets;
 using Nautilus.Assets.PrefabTemplates;
@@ -21,6 +21,7 @@ using UnityEngine;
 using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 using PrefabUtils = Nautilus.Utility.PrefabUtils;
+using System.Linq;
 
 namespace Customitems.main
 {
@@ -166,17 +167,18 @@ namespace Customitems.main
             Important = EnumHandler.AddEntry<PingType>("Important Location")
 .WithIcon(RamuneLib.Utils.ImageUtils.GetSprite("Extrapoint"));
             harmony.PatchAll();
-            Maketabs();
-            LoadPrePrePreIngredientsRequirements();
-            LoadPrePreIngredientsRequirements();
-            LoadPreIngredientsRequirements();
+            RegisterCustomTabs();
+            MakeDefaulttabs();
+            LoadBasicIngredientsRequirements();
+            LoadCombinedIngredientsRequirements();
+            LoadAdvancedIngredientsRequirements();
             LoadIngredientsRequirements();
-            LoadEggRequirements();
+            LoadCustomItems();
             LoadBatteryRequirements();
            
         }
        
-        private void Maketabs()
+        private void MakeDefaulttabs()
         {
             Console.Write("Loading Tabs");
             CraftTreeHandler.AddTabNode(CraftTree.Type.Fabricator, "CIS", "CustomItems",
@@ -185,13 +187,13 @@ namespace Customitems.main
 
 
                 });
-            CraftTreeHandler.AddTabNode(CraftTree.Type.Fabricator, "PoolNoodle", "Poster",
+            CraftTreeHandler.AddTabNode(CraftTree.Type.Fabricator, "PoolNoodle", "Horizontal Posters",
                 SpriteManager.Get(TechType.PosterKitty), new string[]
                 {
 
                     "CIS"
                 });
-            CraftTreeHandler.AddTabNode(CraftTree.Type.Fabricator, "PoolNoodle2", "Poster",
+            CraftTreeHandler.AddTabNode(CraftTree.Type.Fabricator, "PoolNoodle2", "Vertical Poster",
                 SpriteManager.Get(TechType.PosterAurora), new string[]
                 {
 
@@ -203,7 +205,7 @@ namespace Customitems.main
 
                     "CIS"
                 });
-            CraftTreeHandler.AddTabNode(CraftTree.Type.Fabricator, "Noodle1", "Food",
+            CraftTreeHandler.AddTabNode(CraftTree.Type.Fabricator, "Noodle", "Food",
                 SpriteManager.Get(TechType.NutrientBlock), new string[]
                 {
 
@@ -333,7 +335,7 @@ namespace Customitems.main
                 });
            
         }
-        private void LoadEggRequirements()
+        private void LoadCustomItems()
         {
             RequirementsLoader loader = new RequirementsLoader();
             Dictionary<string, EggInfoData> allEggInfo = loader.LoadAllEggInfo();
@@ -407,12 +409,25 @@ namespace Customitems.main
                                 prefab.SetPdaGroupCategory(TechGroup.Personal, TechCategory.Tools);
                                 string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                 prefab.SetRecipeFromJson(recipeText);
-                                CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator, prefab.Info.TechType,
-                                    new string[]
-                                    {
-                                        "CIS",
-                                        "FA"
-                                    });
+                                if (eggData.UseDefaultTab)
+                                {
+                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
+                                        prefab.Info.TechType,
+                                        new string[]
+                                        {
+                                            "CIS",
+                                            "FA"
+                                                
+                                        });
+                                }
+                                else if (eggData.UseCustomTab)
+                                {
+                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
+                                        prefab.Info.TechType,
+                                         ParsePath(eggData.Path));
+                                }
+
+
                                 prefab.SetGameObject(setitem);
                                 prefab.Register();
                                 SurvivalHandler.GiveHealthOnConsume(prefab.Info.TechType, eggData.Health, true);
@@ -444,12 +459,26 @@ namespace Customitems.main
 
 
 
-                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator, prefab.Info.TechType,
-                                        new string[]
-                                        {
-                                            "CIS",
-                                            "FA"
-                                        });
+                                    if (eggData.UseDefaultTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            new string[]
+                                            {
+                                                "CIS",
+                                                "FA"
+                                                
+                                            });
+                                    }
+                                  else if (eggData.UseCustomTab)
+{
+    CraftTreeHandler.AddCraftingNode(
+        CraftTree.Type.Fabricator,
+        prefab.Info.TechType,
+        ParsePath(eggData.Path)
+    );
+}
+
                                     prefab.SetGameObject(medkit);
                                     prefab.Register();
                                     if (eggData.Heal == true)
@@ -462,12 +491,26 @@ namespace Customitems.main
                                 {
 
 
-                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator, prefab.Info.TechType,
-                                        new string[]
-                                        {
-                                            "CIS",
-                                            "OX"
-                                        });
+                                    if (eggData.UseDefaultTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            new string[]
+                                            {
+                                                "CIS",
+                                                "OX"
+                                                
+                                            });
+                                    }
+                                  else if (eggData.UseCustomTab)
+{
+    CraftTreeHandler.AddCraftingNode(
+        CraftTree.Type.Fabricator,
+        prefab.Info.TechType,
+        ParsePath(eggData.Path)
+    );
+}
+
                                     prefab.SetGameObject(medkit);
                                     prefab.Register();
 
@@ -494,12 +537,26 @@ namespace Customitems.main
                                 prefab.SetPdaGroupCategory(TechGroup.Personal, TechCategory.Equipment);
                                 string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                 prefab.SetRecipeFromJson(recipeText);
-                                CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator, prefab.Info.TechType,
-                                    new string[]
-                                    {
-                                        "CIS",
-                                        "EQP"
-                                    });
+                                if (eggData.UseDefaultTab)
+                                {
+                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
+                                        prefab.Info.TechType,
+                                        new string[]
+                                        {
+                                            "CIS",
+                                            "EQP"
+                                                
+                                        });
+                                }
+                                else if (eggData.UseCustomTab)
+                                {
+                                    CraftTreeHandler.AddCraftingNode(
+                                        CraftTree.Type.Fabricator,
+                                        prefab.Info.TechType,
+                                        ParsePath(eggData.Path)
+                                    );
+                                }
+
                                 prefab.SetGameObject(tankitem);
                                 prefab.Register();
 
@@ -594,6 +651,24 @@ namespace Customitems.main
                                 prefab.SetEquipment(EquipmentType.Hand).WithQuickSlotType(QuickSlotType.Selectable);
                                 string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                 prefab.SetPdaGroupCategory(TechGroup.Personal, TechCategory.Equipment);
+                                if (eggData.UseDefaultTab)
+                                {
+                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
+                                        prefab.Info.TechType,
+                                        new string[]
+                                        {
+                                            "CIS",
+                                            "OX"
+                                                
+                                        });
+                                }
+                                else if (eggData.UseCustomTab)
+                                {
+                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
+                                        prefab.Info.TechType,
+                                         ParsePath(eggData.Path));
+                                }
+
                                 prefab.SetRecipeFromJson(recipeText);
                                 prefab.SetGameObject(tankitem);
                          
@@ -628,6 +703,24 @@ namespace Customitems.main
                                 prefab.SetEquipment(EquipmentType.Hand).WithQuickSlotType(QuickSlotType.Selectable);
                                 string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                 prefab.SetPdaGroupCategory(TechGroup.Personal, TechCategory.Equipment);
+                                if (eggData.UseDefaultTab)
+                                {
+                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
+                                        prefab.Info.TechType,
+                                        new string[]
+                                        {
+                                            "CIS",
+                                            "OX"
+                                                
+                                        });
+                                }
+                                else if (eggData.UseCustomTab)
+                                {
+                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
+                                        prefab.Info.TechType,
+                                         ParsePath(eggData.Path));
+                                }
+
                                 prefab.SetRecipeFromJson(recipeText);
                                 prefab.SetGameObject(tankitem);
                                 prefab.Register();
@@ -661,12 +754,25 @@ namespace Customitems.main
                                 prefab.SetPdaGroupCategory(TechGroup.Survival, TechCategory.FoodAndDrinks);
                                 string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                 prefab.SetRecipeFromJson(recipeText);
-                                CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator, prefab.Info.TechType, new string[]
-                            {
-                                "CIS",
-                                "CF3",
-                                eggData.TabName
-                            });
+                                if (eggData.UseDefaultTab)
+                                {
+                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
+                                        prefab.Info.TechType,
+                                        new string[]
+                                        {
+                                            "CIS",
+                                            "CF3",
+                                            eggData.TabName
+                                        });
+                                }
+                                else if (eggData.UseCustomTab)
+                                {
+                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
+                                        prefab.Info.TechType,
+                                        ParsePath(eggData.Path)
+                                               
+                                        );
+                                }
                                 prefab.SetGameObject(food);
                                 prefab.Register();
 
@@ -701,12 +807,24 @@ namespace Customitems.main
                                 prefab.SetPdaGroupCategory(TechGroup.Survival, TechCategory.FoodAndDrinks);
                                 string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                 prefab.SetRecipeFromJson(recipeText);
-                                CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator, prefab.Info.TechType, new string[]
-                               {
-                                   "CIS",
-                                   "CF3",
-                                   eggData.TabName
-                               });
+                                if (eggData.UseDefaultTab)
+                                {
+                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
+                                        prefab.Info.TechType,
+                                        new string[]
+                                        {
+                                            "CIS",
+                                            "CF3",
+                                            eggData.TabName
+                                        });
+                                }
+                                else if (eggData.UseCustomTab)
+                                {
+                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
+                                        prefab.Info.TechType,
+                                        ParsePath(eggData.Path)
+                                    );
+                                }
                                 prefab.SetGameObject(food);
                                 prefab.Register();
 
@@ -749,11 +867,23 @@ namespace Customitems.main
                                 string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                 prefab.SetEquipment(EquipmentType.Hand).WithQuickSlotType(QuickSlotType.Selectable);
                                 prefab.SetRecipeFromJson(recipeText);
-                                CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator, prefab.Info.TechType, new string[]
-                        {
-                                   "CIS",
-                                   "PoolNoodle3"
-                        });
+                                if (eggData.UseDefaultTab)
+                                {
+                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
+                                        prefab.Info.TechType,
+                                        new string[]
+                                        {
+                                            "CIS",
+                                            "PoolNoodle3"
+                                        });
+                                }
+                                else if (eggData.UseCustomTab)
+                                {
+                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
+                                        prefab.Info.TechType,
+                                         ParsePath(eggData.Path));
+                                }
+
                                 prefab.WithAutoUnlock();
                                 prefab.SetGameObject(fphoto);
                                 prefab.Register();
@@ -817,11 +947,25 @@ namespace Customitems.main
                                     string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                     prefab.SetEquipment(EquipmentType.Hand).WithQuickSlotType(QuickSlotType.Selectable);
                                     prefab.SetRecipeFromJson(recipeText);
-                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator, prefab.Info.TechType, new string[]
-                            {
-                                   "CIS",
-                                   "PoolNoodle"
-                            });
+                                    if (eggData.UseDefaultTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            new string[]
+                                            {
+                                                "CIS",
+                                                "PoolNoodle"
+                                            });
+                                    }
+                                    else if (eggData.UseCustomTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(
+                                            CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            ParsePath(eggData.Path)
+                                        );
+                                    }
+
                                     prefab.WithAutoUnlock();
                                     prefab.SetGameObject(poster);
                                     prefab.Register();
@@ -832,11 +976,25 @@ namespace Customitems.main
                                     string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                     prefab.SetEquipment(EquipmentType.Hand).WithQuickSlotType(QuickSlotType.Selectable);
                                     prefab.SetRecipeFromJson(recipeText);
-                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator, prefab.Info.TechType, new string[]
-                            {
-                                   "CIS",
-                                   "PoolNoodle2"
-                            });
+                                    if (eggData.UseDefaultTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            new string[]
+                                            {
+                                                "CIS",
+                                                "PoolNoodle2"
+                                            });
+                                    }
+                                    else if (eggData.UseCustomTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(
+                                            CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            ParsePath(eggData.Path)
+                                        );
+                                    }
+
                                     prefab.WithAutoUnlock();
                                     prefab.SetGameObject(poster);
                                     prefab.Register();
@@ -920,6 +1078,68 @@ namespace Customitems.main
                                         obj.FindChild("Build Trigger").transform.rotation = Quaternion.Euler(0, 0, 90);
                                        
                                     }
+                                    else if (eggData.BBox == true)
+                                    {
+                                        var renderer = obj.transform.Find("Shipwreck_big_box/Shipwreck_big_box_cap")?.GetComponent<MeshRenderer>();
+                                        if (renderer != null)
+                                        {
+                    
+                                            renderer.materials[0].SetTexture("_MainTex", RamuneLib.Utils.ImageUtils.GetTexture("Maintop"));
+                                            renderer.materials[0].SetTexture("_SpecTex", RamuneLib.Utils.ImageUtils.GetTexture("Maintop"));
+                                            renderer.materials[0].SetTexture("_DetailDiffuseTex", RamuneLib.Utils.ImageUtils.GetTexture("Maintop"));
+                                            renderer.materials[0].SetTexture("_DetailSpecTex", RamuneLib.Utils.ImageUtils.GetTexture("Maintop"));
+                                            renderer.materials[0].SetTexture("_BumpMap", RamuneLib.Utils.ImageUtils.GetTexture("Bump"));
+                                            renderer.materials[0].SetTexture("_DetailBumpTex", RamuneLib.Utils.ImageUtils.GetTexture("Bump"));
+                                            renderer.materials[1].SetTexture("_SpecTex", RamuneLib.Utils.ImageUtils.GetTexture("OGtop"));
+                                            renderer.materials[1].SetTexture("_BumpMap", RamuneLib.Utils.ImageUtils.GetTexture("Bump"));
+                                            renderer.materials[1].SetTexture("_DetailDiffuseTex", RamuneLib.Utils.ImageUtils.GetTexture("OGtop"));
+                                            renderer.materials[1].SetTexture("_DetailSpecTex", RamuneLib.Utils.ImageUtils.GetTexture("OGtop"));
+                                            renderer.materials[1].SetTexture("_DetailBumpTex", RamuneLib.Utils.ImageUtils.GetTexture("Bump"));
+                                            renderer.materials[2].SetTexture("_SpecTex", RamuneLib.Utils.ImageUtils.GetTexture("MainChest"));
+                                            renderer.materials[2].SetTexture("_BumpMap", RamuneLib.Utils.ImageUtils.GetTexture("Bump"));
+                                            renderer.materials[2].SetTexture("_DetailDiffuseTex", RamuneLib.Utils.ImageUtils.GetTexture("MainChest"));
+                                            renderer.materials[2].SetTexture("_DetailSpecTex", RamuneLib.Utils.ImageUtils.GetTexture("MainChest"));
+                                            renderer.materials[2].SetTexture("_DetailBumpTex", RamuneLib.Utils.ImageUtils.GetTexture("Bump"));
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("Renderer not found");
+                                        }
+                                        var renderer1 = obj.transform.Find("Shipwreck_big_box")?.GetComponent<MeshRenderer>();
+                                        if (renderer1 != null)
+                                        {
+                                            renderer1.materials[0].mainTexture = RamuneLib.Utils.ImageUtils.GetTexture("MainChest");
+                                            renderer1.materials[0].SetTexture("_SpecTex", RamuneLib.Utils.ImageUtils.GetTexture("MainChest"));
+                                            renderer1.materials[0].SetTexture("_DetailDiffuseTex", RamuneLib.Utils.ImageUtils.GetTexture("MainChest"));
+                                            renderer1.materials[0].SetTexture("_DetailSpecTex", RamuneLib.Utils.ImageUtils.GetTexture("MainChest"));
+                                            renderer1.materials[0].SetTexture("_BumpMap", RamuneLib.Utils.ImageUtils.GetTexture("Bump"));
+                                            renderer1.materials[0].SetTexture("_DetailBumpTex", RamuneLib.Utils.ImageUtils.GetTexture("Bump"));
+                                            renderer.materials[2].SetTexture("_SpecTex", RamuneLib.Utils.ImageUtils.GetTexture("OGtop"));
+                                            renderer.materials[2].SetTexture("_DetailDiffuseTex", RamuneLib.Utils.ImageUtils.GetTexture("OGtop"));
+                                            renderer.materials[2].SetTexture("_DetailSpecTex", RamuneLib.Utils.ImageUtils.GetTexture("OGtop"));
+                                            renderer.materials[2].SetTexture("_BumpMap", RamuneLib.Utils.ImageUtils.GetTexture("Bump"));
+                                            renderer.materials[2].SetTexture("_DetailBumpTex", RamuneLib.Utils.ImageUtils.GetTexture("Bump"));
+                                            renderer.materials[1].SetTexture("_SpecTex", RamuneLib.Utils.ImageUtils.GetTexture("OGtop"));
+                                            renderer.materials[1].SetTexture("_DetailDiffuseTex", RamuneLib.Utils.ImageUtils.GetTexture("OGtop"));
+                                            renderer.materials[1].SetTexture("_DetailSpecTex", RamuneLib.Utils.ImageUtils.GetTexture("OGtop"));
+                                            renderer.materials[1].SetTexture("_BumpMap", RamuneLib.Utils.ImageUtils.GetTexture("Bump"));
+                                            renderer.materials[1].SetTexture("_DetailBumpTex", RamuneLib.Utils.ImageUtils.GetTexture("Bump"));
+                                            // renderer.materials[3].SetTexture("_SpecTex", RamuneLib.Utils.ImageUtils.GetTexture("YLtop"));
+                                            // renderer.materials[3].SetTexture("_DetailDiffuseTex", RamuneLib.Utils.ImageUtils.GetTexture("YLtop"));
+                                            // renderer.materials[3].SetTexture("_DetailSpecTex", RamuneLib.Utils.ImageUtils.GetTexture("YLtop"));
+                                            //  renderer.materials[3].SetTexture("_BumpMap", RamuneLib.Utils.ImageUtils.GetTexture("Bump"));
+                                            // renderer.materials[3].SetTexture("_DetailBumpTex", RamuneLib.Utils.ImageUtils.GetTexture("Bump"));
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("Renderer not found");
+                                        }
+                                        SkyApplier Sky = obj.GetComponent<SkyApplier>();
+                                        Sky.anchorSky = Skies.Auto;
+                                        Nautilus.Utility.MaterialUtils.ApplySNShaders(obj);
+                                        obj.EnsureComponent<Constructable>().placeDefaultDistance = 20f;
+                                        obj.EnsureComponent<Constructable>().forceUpright = true;
+                                    } 
                                     else if (eggData.IsmultObject == true)
                                     {
                                         if (eggData.OneExtra == true)
@@ -931,7 +1151,7 @@ namespace Customitems.main
                                             obj.transform.Find(eggData.ExtraObjectName).parent = model.transform;
                                             obj.transform.Find(eggData.ExtraObjectName2).parent = model.transform;
                                         }
-                                       
+                                        
 
                                     }
 
@@ -1605,13 +1825,26 @@ namespace Customitems.main
                                     prefab.SetPdaGroupCategory(TechGroup.Survival, TechCategory.FoodAndDrinks);
                                     string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                     prefab.SetRecipeFromJson(recipeText);
-                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator, prefab.Info.TechType,
-                                        new string[]
-                                        {
-                                            "CIS",
-                                            "CF3",
-                                            eggData.TabName
-                                        });
+                                    if (eggData.UseDefaultTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            new string[]
+                                            {
+                                                "CIS",
+                                                "CF3",
+                                                eggData.TabName
+                                            });
+                                    }
+                                    else if (eggData.UseCustomTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(
+                                            CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            ParsePath(eggData.Path)
+                                        );
+                                    }
+
                                     prefab.SetGameObject(food);
                                     prefab.Register();
 
@@ -1646,13 +1879,26 @@ namespace Customitems.main
                                     prefab.SetPdaGroupCategory(TechGroup.Survival, TechCategory.FoodAndDrinks);
                                     string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                     prefab.SetRecipeFromJson(recipeText);
-                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator, prefab.Info.TechType,
-                                        new string[]
-                                        {
-                                            "CIS",
-                                            "CF3",
-                                            eggData.TabName
-                                        });
+                                    if (eggData.UseDefaultTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            new string[]
+                                            {
+                                                "CIS",
+                                                "CF3",
+                                                eggData.TabName
+                                            });
+                                    }
+                                    else if (eggData.UseCustomTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(
+                                            CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            ParsePath(eggData.Path)
+                                        );
+                                    }
+
                                     prefab.SetGameObject(food);
                                     prefab.Register();
 
@@ -1674,12 +1920,25 @@ namespace Customitems.main
                                     prefab.SetPdaGroupCategory(TechGroup.Survival, TechCategory.FoodAndDrinks);
                                     string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                     prefab.SetRecipeFromJson(recipeText);
-                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator, prefab.Info.TechType,
-                                        new string[]
-                                        {
-                                            "CIS",
-                                            "IDT"
-                                        });
+                                    if (eggData.UseItemTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            new string[]
+                                            {
+                                                "CIS",
+                                                "IDT"
+                                            });
+                                    }
+                                    else if (eggData.UseCustomTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(
+                                            CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            ParsePath(eggData.Path)
+                                        );
+                                    }
+
                                     prefab.SetGameObject(food);
                                     prefab.Register();
 
@@ -1708,7 +1967,7 @@ namespace Customitems.main
                 Debug.LogError("Failed to load Ingredient info data.");
             }
         }
-         private void LoadPreIngredientsRequirements()
+         private void LoadAdvancedIngredientsRequirements()
         {
             IRequirementsLoaderss loader = new IRequirementsLoaderss();
             Dictionary<string, EggInfoData> allEggInfo = loader.LoadAllEggInfo();
@@ -1756,9 +2015,9 @@ namespace Customitems.main
 
                             // Create CloneTemplate using ResourceId
                             CloneTemplate cloneTemplate = new CloneTemplate(prefab.Info, eggData.ResourceId);
-                            if (eggData.PreIngredients == true)
+                            if (eggData.PreIngredients || eggData.AdvancedIngredients == true)
                             {
-                                if (eggData.PIfood == true)
+                                if (eggData.PIfood || eggData.Advancedfood == true)
                                 {
                                     var food = new CloneTemplate(prefab.Info, eggData.ResourceId);
                                     food.ModifyPrefab += obj =>
@@ -1787,19 +2046,32 @@ namespace Customitems.main
                                     prefab.SetPdaGroupCategory(TechGroup.Survival, TechCategory.FoodAndDrinks);
                                     string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                     prefab.SetRecipeFromJson(recipeText);
-                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator, prefab.Info.TechType,
-                                        new string[]
-                                        {
-                                            "CIS",
-                                            "CF3",
-                                            eggData.TabName
-                                        });
+                                    if (eggData.UseDefaultTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            new string[]
+                                            {
+                                                "CIS",
+                                                "CF3",
+                                                eggData.TabName
+                                            });
+                                    }
+                                    else if (eggData.UseCustomTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(
+                                            CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            ParsePath(eggData.Path)
+                                        );
+                                    }
+
                                     prefab.SetGameObject(food);
                                     prefab.Register();
 
 
                                 }
-                                else if (eggData.PIdrink == true)
+                                else if (eggData.PIdrink || eggData.Advanceddrink == true)
                                 {
                                     var food = new CloneTemplate(prefab.Info, eggData.ResourceId);
                                     food.ModifyPrefab += obj =>
@@ -1817,19 +2089,32 @@ namespace Customitems.main
                                     prefab.SetPdaGroupCategory(TechGroup.Survival, TechCategory.FoodAndDrinks);
                                     string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                     prefab.SetRecipeFromJson(recipeText);
-                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator, prefab.Info.TechType,
-                                        new string[]
-                                        {
-                                            "CIS",
-                                            "CF3",
-                                            eggData.TabName
-                                        });
+                                    if (eggData.UseDefaultTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            new string[]
+                                            {
+                                                "CIS",
+                                                "CF3",
+                                                eggData.TabName
+                                            });
+                                    }
+                                    else if (eggData.UseCustomTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(
+                                            CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            ParsePath(eggData.Path)
+                                        );
+                                    }
+
                                     prefab.SetGameObject(food);
                                     prefab.Register();
 
 
                                 }
-                                else if (eggData.PIItem == true)
+                                else if (eggData.PIItem || eggData.AdvancedItem == true)
                                 {
                                     var food = new CloneTemplate(prefab.Info, eggData.ResourceId);
                                     food.ModifyPrefab += obj =>
@@ -1845,12 +2130,25 @@ namespace Customitems.main
                                     prefab.SetPdaGroupCategory(TechGroup.Survival, TechCategory.FoodAndDrinks);
                                     string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                     prefab.SetRecipeFromJson(recipeText);
-                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator, prefab.Info.TechType,
-                                        new string[]
-                                        {
-                                            "CIS",
-                                            "IDT"
-                                        });
+                                    if (eggData.UseItemTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            new string[]
+                                            {
+                                                "CIS",
+                                                "IDT"
+                                            });
+                                    }
+                                    else if (eggData.UseCustomTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(
+                                            CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            ParsePath(eggData.Path)
+                                        );
+                                    }
+
                                     prefab.SetGameObject(food);
                                     prefab.Register();
 
@@ -1879,7 +2177,7 @@ namespace Customitems.main
                 Debug.LogError("Failed to load Ingredient info data.");
             }
         }
-          private void LoadPrePreIngredientsRequirements()
+          private void LoadCombinedIngredientsRequirements()
         {
             IRequirementsLoadersss loader = new IRequirementsLoadersss();
             Dictionary<string, EggInfoData> allEggInfo = loader.LoadAllEggInfo();
@@ -1926,9 +2224,9 @@ namespace Customitems.main
 
                             // Create CloneTemplate using ResourceId
                             CloneTemplate cloneTemplate = new CloneTemplate(prefab.Info, eggData.ResourceId);
-                            if (eggData.PPIngredients == true)
+                            if (eggData.PPIngredients || eggData.CombinedIngredients== true)
                             {
-                                if (eggData.PPIfood == true)
+                                if (eggData.PPIfood|| eggData.CombinedFood == true)
                                 {
                                     var food = new CloneTemplate(prefab.Info, eggData.ResourceId);
                                     food.ModifyPrefab += obj =>
@@ -1946,19 +2244,32 @@ namespace Customitems.main
                                     prefab.SetPdaGroupCategory(TechGroup.Survival, TechCategory.FoodAndDrinks);
                                     string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                     prefab.SetRecipeFromJson(recipeText);
-                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator, prefab.Info.TechType,
-                                        new string[]
-                                        {
-                                            "CIS",
-                                            "CF3",
-                                            eggData.TabName
-                                        });
+                                    if (eggData.UseDefaultTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            new string[]
+                                            {
+                                                "CIS",
+                                                "CF3",
+                                                eggData.TabName
+                                            });
+                                    }
+                                    else if (eggData.UseCustomTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(
+                                            CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            ParsePath(eggData.Path)
+                                        );
+                                    }
+
                                     prefab.SetGameObject(food);
                                     prefab.Register();
 
 
                                 }
-                                else if (eggData.PPIdrink == true)
+                                else if (eggData.PPIdrink || eggData.Combineddrink == true)
                                 {
                                     var food = new CloneTemplate(prefab.Info, eggData.ResourceId);
                                     food.ModifyPrefab += obj =>
@@ -1976,19 +2287,32 @@ namespace Customitems.main
                                     prefab.SetPdaGroupCategory(TechGroup.Survival, TechCategory.FoodAndDrinks);
                                     string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                     prefab.SetRecipeFromJson(recipeText);
-                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator, prefab.Info.TechType,
-                                        new string[]
-                                        {
-                                            "CIS",
-                                            "CF3",
-                                            eggData.TabName
-                                        });
+                                    if (eggData.UseDefaultTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            new string[]
+                                            {
+                                                "CIS",
+                                                "CF3",
+                                                eggData.TabName
+                                            });
+                                    }
+                                    else if (eggData.UseCustomTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(
+                                            CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            ParsePath(eggData.Path)
+                                        );
+                                    }
+
                                     prefab.SetGameObject(food);
                                     prefab.Register();
 
 
                                 }
-                                else if (eggData.PPIItem == true)
+                                else if (eggData.PPIItem || eggData.CombinedItem== true)
                                 {
                                     var food = new CloneTemplate(prefab.Info, eggData.ResourceId);
                                     food.ModifyPrefab += obj =>
@@ -2004,12 +2328,25 @@ namespace Customitems.main
                                     prefab.SetPdaGroupCategory(TechGroup.Survival, TechCategory.FoodAndDrinks);
                                     string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                     prefab.SetRecipeFromJson(recipeText);
-                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator, prefab.Info.TechType,
-                                        new string[]
-                                        {
-                                            "CIS",
-                                            "IDT"
-                                        });
+                                    if (eggData.UseItemTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            new string[]
+                                            {
+                                                "CIS",
+                                                "IDT"
+                                            });
+                                    }
+                                    else if (eggData.UseCustomTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(
+                                            CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            ParsePath(eggData.Path)
+                                        );
+                                    }
+
                                     prefab.SetGameObject(food);
                                     prefab.Register();
 
@@ -2038,7 +2375,7 @@ namespace Customitems.main
                 Debug.LogError("Failed to load Ingredient info data.");
             }
         }
-            private void LoadPrePrePreIngredientsRequirements()
+            private void LoadBasicIngredientsRequirements()
         {
             IRequirementsLoaderssss loader = new IRequirementsLoaderssss();
             Dictionary<string, EggInfoData> allEggInfo = loader.LoadAllEggInfo();
@@ -2085,9 +2422,9 @@ namespace Customitems.main
 
                             // Create CloneTemplate using ResourceId
                             CloneTemplate cloneTemplate = new CloneTemplate(prefab.Info, eggData.ResourceId);
-                            if (eggData.PPPIngredients == true)
+                            if (eggData.PPPIngredients || eggData.BasicIngredients == true)
                             {
-                                if (eggData.PPPIfood == true)
+                                if (eggData.PPPIfood || eggData.BasicFood == true)
                                 {
                                     var food = new CloneTemplate(prefab.Info, eggData.ResourceId);
                                     food.ModifyPrefab += obj =>
@@ -2105,19 +2442,32 @@ namespace Customitems.main
                                     prefab.SetPdaGroupCategory(TechGroup.Survival, TechCategory.FoodAndDrinks);
                                     string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                     prefab.SetRecipeFromJson(recipeText);
-                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator, prefab.Info.TechType,
-                                        new string[]
-                                        {
-                                            "CIS",
-                                            "CF3",
-                                            eggData.TabName
-                                        });
+                                    if (eggData.UseDefaultTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            new string[]
+                                            {
+                                                "CIS",
+                                                "CF3",
+                                                eggData.TabName
+                                            });
+                                    }
+                                    else if (eggData.UseCustomTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(
+                                            CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            ParsePath(eggData.Path)
+                                        );
+                                    }
+
                                     prefab.SetGameObject(food);
                                     prefab.Register();
 
 
                                 }
-                                else if (eggData.PPPIdrink == true)
+                                else if (eggData.PPPIdrink || eggData.BasicDrink == true)
                                 {
                                     var food = new CloneTemplate(prefab.Info, eggData.ResourceId);
                                     food.ModifyPrefab += obj =>
@@ -2135,19 +2485,32 @@ namespace Customitems.main
                                     prefab.SetPdaGroupCategory(TechGroup.Survival, TechCategory.FoodAndDrinks);
                                     string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                     prefab.SetRecipeFromJson(recipeText);
-                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator, prefab.Info.TechType,
-                                        new string[]
-                                        {
-                                            "CIS",
-                                            "CF3",
-                                            eggData.TabName
-                                        });
+                                    if (eggData.UseDefaultTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            new string[]
+                                            {
+                                                "CIS",
+                                                "CF3",
+                                                eggData.TabName
+                                            });
+                                    }
+                                    else if (eggData.UseCustomTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(
+                                            CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            ParsePath(eggData.Path)
+                                        );
+                                    }
+
                                     prefab.SetGameObject(food);
                                     prefab.Register();
 
 
                                 }
-                                else if (eggData.PPPIItem == true)
+                                else if (eggData.PPPIItem || eggData.BasicItem == true)
                                 {
                                     var food = new CloneTemplate(prefab.Info, eggData.ResourceId);
                                     food.ModifyPrefab += obj =>
@@ -2163,12 +2526,25 @@ namespace Customitems.main
                                     prefab.SetPdaGroupCategory(TechGroup.Survival, TechCategory.FoodAndDrinks);
                                     string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                     prefab.SetRecipeFromJson(recipeText);
-                                    CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator, prefab.Info.TechType,
-                                        new string[]
-                                        {
-                                            "CIS",
-                                            "IDT"
-                                        });
+                                    if (eggData.UseItemTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            new string[]
+                                            {
+                                                "CIS",
+                                                "IDT"
+                                            });
+                                    }
+                                    else if (eggData.UseCustomTab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(
+                                            CraftTree.Type.Fabricator,
+                                            prefab.Info.TechType,
+                                            ParsePath(eggData.Path)
+                                        );
+                                    }
+
                                     prefab.SetGameObject(food);
                                     prefab.Register();
 
@@ -2197,7 +2573,70 @@ namespace Customitems.main
                 Debug.LogError("Failed to load Ingredient info data.");
             }
         }
+ 
+        public void RegisterCustomTabs()
+        {
+            var loader = new RequirementsTabsLoaders();
+            Dictionary<string, EggInfoData> tabDefs = loader.LoadAllEggInfo();
 
+            foreach (var entry in tabDefs)
+            {
+                EggInfoData tab = entry.Value;
+
+                if (string.IsNullOrEmpty(tab.TabID))
+                {
+                    Console.WriteLine($"[TabLoader] Skipped tab (missing TabID): {entry.Key}");
+                    continue;
+                }
+
+                var sprite = RamuneLib.Utils.ImageUtils.GetSprite(tab.SpriteName ?? tab.Spritename ?? "DefaultTabIcon");
+                var path = ParsePath(tab.Path); // <-- Leave your ParsePath logging in place
+
+                if (tab.Maintab && !string.IsNullOrEmpty(tab.TabName))
+                {
+                    Console.WriteLine($"[MainTab] Registering '{tab.TabName}' (ID: {tab.TabID}) at {tab.TreeType} > {tab.Path}");
+                    CraftTreeHandler.AddTabNode(tab.TreeType, tab.TabID, tab.TabName, sprite, path);
+                }
+                else if (tab.Subtab && !string.IsNullOrEmpty(tab.TabName))
+                {
+                    Console.WriteLine($"[SubTab] Registering '{tab.TabName}' (ID: {tab.TabID}) at {tab.TreeType} > {tab.Path}");
+                    CraftTreeHandler.AddTabNode(tab.TreeType, tab.TabID, tab.TabName, sprite, path);
+                }
+                else if (tab.Sibtab && !string.IsNullOrEmpty(tab.TabName))
+                {
+                    Console.WriteLine($"[SibTab] Registering '{tab.TabName}' (ID: {tab.TabID}) at {tab.TreeType} > {tab.Path}");
+                    CraftTreeHandler.AddTabNode(tab.TreeType, tab.TabID, tab.TabName, sprite, path);
+                }
+                else
+                {
+                    Console.WriteLine($"[TabLoader] Skipped '{tab.TabID}': no valid tab type flag set or missing name.");
+                }
+
+                // ⬇️ Moved this to bottom, as requested
+                Console.WriteLine(path.Length == 0
+                    ? "[TabLoader] No path specified — registering tab at root level."
+                    : $"[TabLoader] Parsed path: [{string.Join(" > ", path)}]");
+            }
+        }
+
+
+
+        private string[] ParsePath(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                Console.WriteLine("[TabLoader] No path specified — registering tab at root level.");
+                return new string[] { };
+            }
+
+            var parts = path.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(p => p.Trim())
+                .ToArray();
+
+            Console.WriteLine($"[TabLoader] Parsed path: [{string.Join(" > ", parts)}]");
+
+            return parts;
+        }
         private TechType GetTechType(string techTypeStr)
         {
             if (Enum.TryParse(techTypeStr, out TechType result))
