@@ -170,6 +170,7 @@ public class EggData
         public bool CreepVine { get; set; }
         public bool Custom { get; set; }
         //----------------------------------------
+        //CustomBattery Bools and Ints 
         public bool IsCBP { get; set; }
         public string unlockTechtype { get; set; }
         public string CustomBatteryName { get; set; }
@@ -200,14 +201,11 @@ public class EggData
         public bool Maintab { get; set; }
         public bool Subtab { get; set; }
         public bool Sibtab { get; set; }
-
         [JsonConverter(typeof(StringEnumConverter))]
         public CraftTree.Type TreeType { get; set; } = CraftTree.Type.Fabricator;
-        
         public string Path { get; set; } // Tab path as a string, e.g. "CIS,Food"
         public string TabMainName { get; set; }
         public string TabSubName { get; set; }
-
         public string TabSibName { get; set; }
 
         //--------------------------------------------
