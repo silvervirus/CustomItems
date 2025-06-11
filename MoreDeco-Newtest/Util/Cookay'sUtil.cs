@@ -65,7 +65,7 @@ public static class Cookay_sUtil
             return parts;
         }
 
-
+        
             public static bool ModdedEnumExists<TEnum>(string name) where TEnum : Enum
         {
             // Get all enum values for the specified Enum type
