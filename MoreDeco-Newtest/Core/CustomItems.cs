@@ -487,7 +487,7 @@ public class CustomItems
                                         obj.EnsureComponent<LargeWorldEntity>().cellLevel =
                                             LargeWorldEntity.CellLevel.Near;
 
-                                        // Optional: freeze motion for clean placement
+                                      
                                         var rb = obj.GetComponent<Rigidbody>();
                                         rb.useGravity = false;
                                         rb.constraints   = RigidbodyConstraints.FreezeAll;   
@@ -506,22 +506,20 @@ public class CustomItems
                                         placeTool.alignWithSurface = false;
                                         placeTool.ghostModelPrefab = obj;
                                         placeTool.hideInvalidGhostModel = false;
-                                        // most important fix:
+                                      
                                         placeTool.hasAnimations = false;
                                         placeTool.hasBashAnimation = false;
                                         placeTool.drawTime = 0f;
                                         obj.EnsureComponent<OpenStorageOnClick>();
-                                        // Create a dummy object that is ONLY for in-hand viewing
-                                        // Clone the model for safe in-hand use
-                                        // 1. Create view and prop model holders
+                                      
                                         GameObject viewModel = new GameObject("FPViewModel");
                                         viewModel.transform.SetParent(obj.transform, false);
 
                                         GameObject propModel = new GameObject("FPPropModel");
                                         propModel.transform.SetParent(obj.transform, false);
 
-// 2. Move visible mesh under view model
-                                        var model2 = obj.transform.Find("model"); // Replace "model" with your actual mesh root
+
+                                        var model2 = obj.transform.Find("model"); 
                                         if (model2 != null)
                                         {
                                             model2.SetParent(viewModel.transform, false);
@@ -530,7 +528,7 @@ public class CustomItems
                                             GameObject modelClone = GameObject.Instantiate(model.gameObject, propModel.transform);
                                         }
 
-// 4. Assign to FPModel
+
                                         var fpModel = obj.EnsureComponent<FPModel>();
                                         fpModel.viewModel = viewModel;
                                         fpModel.propModel = propModel;
