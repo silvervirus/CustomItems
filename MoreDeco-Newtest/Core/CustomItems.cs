@@ -11,6 +11,7 @@ using RamuneLib.Extensions;
 using UnityEngine;
 using static CustomItems.Util.Pings;
 using static CustomItems.Util.Cookay_sUtil;
+using static CustomItems.Core.DecoFabricator;
 using Object = UnityEngine.Object;
 
 namespace CustomItems.Core;
@@ -426,18 +427,9 @@ public class CustomItems
                                 var poster = new CloneTemplate(prefab.Info, eggData.ResourceId);
                                 poster.ModifyPrefab += obj =>
                                 {
-                                    ConstructableFlags constructableFlags = ConstructableFlags.Inside |
-                                                                            ConstructableFlags.Rotatable |
-                                                                            ConstructableFlags.Ground |
-                                                                            ConstructableFlags.Submarine |
-                                                                            ConstructableFlags.Rotatable |
-                                                                            ConstructableFlags.AllowedOnConstructable |
-                                                                            ConstructableFlags.Outside |
-                                                                            ConstructableFlags.Base |
-                                                                            ConstructableFlags.Wall |
-                                                                            ConstructableFlags.Ceiling;
+                                    
 
-                                    ConstructableBounds constructableBounds = obj.AddComponent<ConstructableBounds>();
+                                    
                                     // Allow it to be placed inside bases and submarines on the ground, and can be rotated:
                                     GameObject model = obj.transform.Find(eggData.ObjectName)?.gameObject;
 
@@ -447,6 +439,7 @@ public class CustomItems
                                             $"Failed to find GameObject with name '{eggData.ObjectName}' for Deco '{eggName}'.");
                                         return;
                                     }
+
 
                                     if (eggData.IsPosterV == true)
                                     {
@@ -481,19 +474,183 @@ public class CustomItems
 
 
                                         }
+                                        
 
-                                        else
-                                        {
-                                            Debug.LogWarning("MeshRenderer component not found for setting textures.");
-                                        }
-
-                                        PrefabUtils.AddConstructable(obj, prefab.Info.TechType, constructableFlags,
-                                            model);
+                                       
 
                                     }
+                                    else if (eggData.ItemPlaceable)
+                                    {
+                                        obj.EnsureComponent<Rigidbody>().isKinematic = true;
+                                        obj.EnsureComponent<Pickupable>();
+                                        obj.EnsureComponent<TechTag>().type = prefab.Info.TechType;
+                                        obj.EnsureComponent<LargeWorldEntity>().cellLevel =
+                                            LargeWorldEntity.CellLevel.Near;
 
-                                    ;
+                                        // Optional: freeze motion for clean placement
+                                        var rb = obj.GetComponent<Rigidbody>();
+                                        rb.useGravity = false;
+                                        rb.constraints   = RigidbodyConstraints.FreezeAll;   
 
+                                        // Set up the PlaceTool behavior
+                                        var placeTool = obj.EnsureComponent<PlaceTool>();
+                                        placeTool.allowedOnGround = true;
+                                        placeTool.allowedOutside = true;
+                                        placeTool.allowedInBase = true;
+                                        placeTool.alignWithSurface = false;
+                                        placeTool.allowedOnWalls = true;
+                                        placeTool.allowedOnCeiling = true;
+                                        placeTool.allowedOnConstructable = true;
+                                        placeTool.rotationEnabled = true;
+                                        placeTool.allowedOnRigidBody = true;
+                                        placeTool.alignWithSurface = false;
+                                        placeTool.ghostModelPrefab = obj;
+                                        placeTool.hideInvalidGhostModel = false;
+                                        // most important fix:
+                                        placeTool.hasAnimations = false;
+                                        placeTool.hasBashAnimation = false;
+                                        placeTool.drawTime = 0f;
+                                        obj.EnsureComponent<OpenStorageOnClick>();
+                                        // Create a dummy object that is ONLY for in-hand viewing
+                                        // Clone the model for safe in-hand use
+                                        // 1. Create view and prop model holders
+                                        GameObject viewModel = new GameObject("FPViewModel");
+                                        viewModel.transform.SetParent(obj.transform, false);
+
+                                        GameObject propModel = new GameObject("FPPropModel");
+                                        propModel.transform.SetParent(obj.transform, false);
+
+// 2. Move visible mesh under view model
+                                        var model2 = obj.transform.Find("model"); // Replace "model" with your actual mesh root
+                                        if (model2 != null)
+                                        {
+                                            model2.SetParent(viewModel.transform, false);
+
+                                            // 3. Duplicate for propModel (what shows when dropped)
+                                            GameObject modelClone = GameObject.Instantiate(model.gameObject, propModel.transform);
+                                        }
+
+// 4. Assign to FPModel
+                                        var fpModel = obj.EnsureComponent<FPModel>();
+                                        fpModel.viewModel = viewModel;
+                                        fpModel.propModel = propModel;
+
+
+                                        
+                                        if (eggData.AddStorage)
+                                        {
+                                            PrefabUtils.AddStorageContainer(obj, "StorageRoot", eggData.InternalName,
+                                                eggData.Width, eggData.Height, true);
+                                            
+                                        }
+                                        else if (eggData.IsTable == true)
+                                        {
+
+                                            var cude = obj.transform.Find("Cube");
+                                            cude.localScale = Vector3.one / 0002;
+                                            model.transform.localScale = Vector3.one / 0002;
+                                        }
+                                        else if (eggData.Pen == true)
+                                        {
+                                            Nautilus.Utility.MaterialUtils.ApplySNShaders(obj);
+                                            BoxCollider mainModelCollider = model.EnsureComponent<BoxCollider>();
+                                            mainModelCollider.center = new Vector3(0f, 0f, 0.14f);
+                                            mainModelCollider.size = new Vector3(0.2f, 0.2f, 0.2f);
+                                            model.layer = LayerMask.NameToLayer("Default");
+                                        }
+                                        if (eggData.IsAnArtifact == true)
+                                        {
+                                            var animator = obj.GetComponentInChildren<Animator>();
+                                            if (animator != null)
+                                            {
+                                                animator.enabled = false;
+                                            }
+                                            else
+                                            {
+                                                Debug.LogWarning("Animator component not found.");
+                                            }
+
+                                            var skyApplier = obj.GetComponent<SkyApplier>();
+                                            if (skyApplier != null)
+                                            {
+                                                GameObject.DestroyImmediate(skyApplier);
+                                            }
+
+                                            Nautilus.Utility.MaterialUtils.ApplySNShaders(obj);
+
+                                            var capsuleCollider = obj.GetComponent<CapsuleCollider>();
+                                            if (capsuleCollider != null)
+                                            {
+                                                GameObject.DestroyImmediate(capsuleCollider);
+                                            }
+
+                                            var collider = obj.AddComponent<BoxCollider>();
+                                            collider.size = new Vector3(0.5f, 0.6f, 0.5f);
+                                            collider.center = new Vector3(0f, 0.3f, 0f);
+                                            collider.isTrigger = true;
+                                        }
+                                        else if (eggData.IsGunArtifact == true)
+                                        {
+                                            obj.transform.localPosition = new Vector3(0f, 1.85f, 0f);
+                                            var animator = obj.GetComponentInChildren<Animator>();
+                                            if (animator != null)
+                                            {
+                                                animator.enabled = false;
+                                            }
+                                            else
+                                            {
+                                                Debug.LogWarning("Animator component not found.");
+                                            }
+
+                                            GameObject.DestroyImmediate(obj.GetComponent<EntityTag>());
+                                            GameObject.DestroyImmediate(obj.GetComponent<CapsuleCollider>());
+                                            GameObject.DestroyImmediate(obj.GetComponent<SkyApplier>());
+
+                                            Nautilus.Utility.MaterialUtils.ApplySNShaders(obj);
+
+                                            var collider = obj.AddComponent<BoxCollider>();
+                                            collider.size = new Vector3(0.5f, 0.6f, 0.5f);
+                                            collider.center = new Vector3(0f, 0.3f, 0f);
+                                            collider.isTrigger = true;
+
+                                            obj.AddComponent<SkyApplier>();
+                                        }
+                                        else if (eggData.IsArtifact == true)
+                                        {
+                                            GameObject.DestroyImmediate(obj.GetComponent<SkyApplier>());
+                                            Nautilus.Utility.MaterialUtils.ApplySNShaders(obj);
+
+                                            var capsuleCollider = obj.GetComponent<CapsuleCollider>();
+                                            if (capsuleCollider != null)
+                                            {
+                                                GameObject.DestroyImmediate(capsuleCollider);
+                                            }
+
+                                            var collider = obj.AddComponent<BoxCollider>();
+                                            collider.size = new Vector3(0.5f, 0.6f, 0.5f);
+                                            collider.center = new Vector3(0f, 0.3f, 0f);
+                                            collider.isTrigger = true;
+                                        }
+                                        
+                                    }
+                                    else if (eggData.IsmultObject == true)
+                                    {
+                                        if (eggData.OneExtra == true)
+                                        {
+                                            obj.transform.Find(eggData.ExtraObjectName).parent = model.transform;
+                                        }
+                                        else if (eggData.TwoExtra == true)
+                                        {
+                                            obj.transform.Find(eggData.ExtraObjectName).parent = model.transform;
+                                            obj.transform.Find(eggData.ExtraObjectName2).parent = model.transform;
+                                        }
+                                        
+                                        
+                                    }
+                                    else
+                                    {
+                                        Debug.LogWarning("MeshRenderer component not found for setting textures.");
+                                    }
 
 
                                 };
@@ -502,7 +659,6 @@ public class CustomItems
                                     prefab.SetPdaGroupCategory(TechGroup.Personal, TechCategory.Tools);
                                     string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                     prefab.SetEquipment(EquipmentType.Hand).WithQuickSlotType(QuickSlotType.Selectable);
-                                    prefab.SetRecipeFromJson(recipeText);
                                     prefab.SetRecipeFromJson(recipeText);
                                     if (eggData.UseDefaultTab)
                                     {
@@ -532,7 +688,6 @@ public class CustomItems
                                     string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
                                     prefab.SetEquipment(EquipmentType.Hand).WithQuickSlotType(QuickSlotType.Selectable);
                                     prefab.SetRecipeFromJson(recipeText);
-                                    prefab.SetRecipeFromJson(recipeText);
                                     if (eggData.UseDefaultTab)
                                     {
                                         CraftTreeHandler.AddCraftingNode(CraftTree.Type.Fabricator,
@@ -552,6 +707,112 @@ public class CustomItems
                                     }
                                     prefab.WithAutoUnlock();
                                     prefab.SetGameObject(poster);
+                                    prefab.Register();
+                                }
+                                else if (eggData.ItemPlaceable)
+                                {   
+                                    prefab.SetGameObject(poster);
+                                    prefab.SetUnlock(TechType.Peeper);
+                                    prefab.SetPdaGroupCategory(TechGroup.Personal, TechCategory.Tools);
+                                    prefab.SetEquipment(EquipmentType.Hand).WithQuickSlotType(QuickSlotType.Selectable);
+                                    string recipeText = RamuneLib.Utils.JsonUtils.GetJsonRecipe(eggData.InternalName);
+                                    prefab.SetRecipeFromJson(recipeText);
+                                    if (eggData.DecoLocker)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(DecoFabricator.DecoFab,
+                                            prefab.Info.TechType,
+                                            new string[]
+                                            {
+
+                                                "DeoLocker",
+                                               
+
+                                            });
+                                    }
+                                    else if (eggData.Decoration)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(DecoFabricator.DecoFab,
+                                            prefab.Info.TechType,
+                                            new string[]
+                                            {
+
+                                                "Deo",
+                                                
+
+                                            });
+                                    }
+                                    else if (eggData.DecoEgg)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(DecoFabricator.DecoFab,
+                                            prefab.Info.TechType,
+                                            new string[]
+                                            {
+
+                                                "Deoegg",
+                                                
+
+                                            });
+                                    }
+                                    else if (eggData.DecoOG)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(DecoFabricator.DecoFab,
+                                            prefab.Info.TechType,
+                                            new string[]
+                                            {
+
+                                                "DeoOg",
+                                                
+
+                                            });
+                                    }
+                                    else if (eggData.DecoFood)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(DecoFabricator.DecoFab,
+                                            prefab.Info.TechType,
+                                            new string[]
+                                            {
+
+                                                "DeoFood",
+                                                
+
+                                            });
+                                    }
+                                    else if (eggData.DecoBag)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(DecoFabricator.DecoFab,
+                                            prefab.Info.TechType,
+                                            new string[]
+                                            {
+
+                                                "DeoBags",
+                                                
+
+                                            });
+                                    }
+                                    else if (eggData.DecoLab)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(DecoFabricator.DecoFab,
+                                            prefab.Info.TechType,
+                                            new string[]
+                                            {
+
+                                                "Lab",
+                                                
+
+                                            });
+                                    }
+                                    else if (eggData.DecoAlien)
+                                    {
+                                        CraftTreeHandler.AddCraftingNode(DecoFabricator.DecoFab,
+                                            prefab.Info.TechType,
+                                            new string[]
+                                            {
+
+                                                "Deoalien",
+                                                
+
+                                            });
+                                    }
                                     prefab.Register();
                                 }
                             }
