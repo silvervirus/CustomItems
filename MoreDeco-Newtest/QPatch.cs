@@ -8,6 +8,7 @@ using static CustomItems.Core.LoadDefaultTabs;
 using static CustomItems.Core.CustomBatteries;
 using static CustomItems.Core.CustomItems;
 using static CustomItems.Core.CustomTabs;
+using static CustomItems.Core.DecoFabricator;
 
 
 namespace CustomItems
@@ -28,6 +29,7 @@ namespace CustomItems
         {
             
             harmony.PatchAll();
+            LoadDecoFabricator();
             Maketabs();
             RegisterCustomTabs();
             LoadBasicIngredientsRequirements();
